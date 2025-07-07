@@ -6,6 +6,7 @@ from .benchmark_modules import (
     FreshEncoderModel,
     HuggingFaceEncoderModel,
     LiteLLMModel,
+    LiteLLMInternalModel,
     VLLMModel,
 )
 from .enums import InferenceBackend, ModelType
@@ -34,29 +35,35 @@ def load_model(
     Returns:
         The model.
     """
-    # The order matters; the first model type that matches will be used. For this
-    # reason, they have been ordered in terms of the most common model types.
-    model_class: t.Type[BenchmarkModule]
-    match (model_config.model_type, model_config.inference_backend, model_config.fresh):
-        case (ModelType.GENERATIVE, InferenceBackend.VLLM, False):
-            model_class = VLLMModel
-        case (ModelType.ENCODER, InferenceBackend.TRANSFORMERS, False):
-            model_class = HuggingFaceEncoderModel
-        case (ModelType.GENERATIVE, InferenceBackend.LITELLM, False):
-            model_class = LiteLLMModel
-        case (ModelType.ENCODER, InferenceBackend.TRANSFORMERS, True):
-            model_class = FreshEncoderModel
-        case (_, _, True):
-            raise InvalidModel(
-                "Cannot load a freshly initialised model with the model type "
-                f"{model_config.model_type!r} and inference backend "
-                f"{model_config.inference_backend!r}."
-            )
-        case _:
-            raise InvalidModel(
-                f"Cannot load model with model type {model_config.model_type!r} and "
-                f"inference backend {model_config.inference_backend!r}."
-            )
+    # If use_internal_server is set, always use LiteLLMInternalModel for generative models
+    if getattr(benchmark_config, "use_internal_server", False) and model_config.model_type == ModelType.GENERATIVE:
+        from .benchmark_modules import LiteLLMInternalModel
+        model_class = LiteLLMInternalModel
+    else:
+        model_class: t.Type[BenchmarkModule]
+        match (model_config.model_type, model_config.inference_backend, model_config.fresh):
+            case (ModelType.GENERATIVE, InferenceBackend.VLLM, False):
+                model_class = VLLMModel
+            case (ModelType.ENCODER, InferenceBackend.TRANSFORMERS, False):
+                model_class = HuggingFaceEncoderModel
+            case (ModelType.GENERATIVE, InferenceBackend.LITELLM, False):
+                if model_config.internal_server:
+                    model_class = LiteLLMInternalModel
+                else:
+                    model_class = LiteLLMModel
+            case (ModelType.ENCODER, InferenceBackend.TRANSFORMERS, True):
+                model_class = FreshEncoderModel
+            case (_, _, True):
+                raise InvalidModel(
+                    "Cannot load a freshly initialised model with the model type "
+                    f"{model_config.model_type!r} and inference backend "
+                    f"{model_config.inference_backend!r}."
+                )
+            case _:
+                raise InvalidModel(
+                    f"Cannot load model with model type {model_config.model_type!r} and "
+                    f"inference backend {model_config.inference_backend!r}."
+                )
 
     model = model_class(
         model_config=model_config,

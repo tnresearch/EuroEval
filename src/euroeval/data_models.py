@@ -174,6 +174,10 @@ class BenchmarkConfig:
             Whether the benchmark is being run with the CLI.
         only_allow_safetensors:
             Whether to only allow models that use the safetensors format.
+        use_internal_server:
+            Whether to use the internal vLLM server for all models. If True, all models
+            will be served through the internal server instead of using local HuggingFace
+            models or external APIs.
     """
 
     model_languages: list[Language]
@@ -199,6 +203,7 @@ class BenchmarkConfig:
     debug: bool
     run_with_cli: bool
     only_allow_safetensors: bool
+    use_internal_server: bool
 
 
 class BenchmarkConfigParams(pydantic.BaseModel):
@@ -230,6 +235,7 @@ class BenchmarkConfigParams(pydantic.BaseModel):
     debug: bool
     run_with_cli: bool
     only_allow_safetensors: bool
+    use_internal_server: bool
 
 
 class BenchmarkResult(pydantic.BaseModel):
@@ -533,6 +539,10 @@ class ModelConfig:
         adapter_base_model_id:
             The model ID of the base model if the model is an adapter model. Can be None
             if the model is not an adapter model.
+        internal_server:
+            Whether the model should be served through an internal vLLM server. If True,
+            the model will use the LiteLLMInternalModel instead of the standard LiteLLM
+            or HuggingFace modules.
     """
 
     model_id: str
@@ -545,6 +555,7 @@ class ModelConfig:
     fresh: bool
     model_cache_dir: str
     adapter_base_model_id: str | None
+    internal_server: bool = False
 
     def __hash__(self) -> int:
         """Return a hash of the model configuration."""

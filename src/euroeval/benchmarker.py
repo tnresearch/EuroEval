@@ -81,6 +81,7 @@ class Benchmarker:
         debug: bool = False,
         run_with_cli: bool = False,
         only_allow_safetensors: bool = False,
+        use_internal_server: bool = False,
     ) -> None:
         """Initialise the benchmarker.
 
@@ -153,6 +154,10 @@ class Benchmarker:
             only_allow_safetensors:
                 Whether to only allow models that use the safetensors format. Defaults
                 to False.
+            use_internal_server:
+                Whether to use the internal vLLM server for all models. If True, all models
+                will be served through the internal server instead of using local HuggingFace
+                models or external APIs. Defaults to False.
 
         Raises:
             ValueError:
@@ -195,6 +200,7 @@ class Benchmarker:
             debug=debug,
             run_with_cli=run_with_cli,
             only_allow_safetensors=only_allow_safetensors,
+            use_internal_server=use_internal_server,
         )
 
         self.benchmark_config = build_benchmark_config(

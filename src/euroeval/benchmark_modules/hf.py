@@ -107,6 +107,12 @@ class HuggingFaceEncoderModel(BenchmarkModule):
             benchmark_config:
                 The benchmark configuration.
         """
+        if getattr(benchmark_config, "use_internal_server", False):
+            from ..exceptions import InvalidModel
+            raise InvalidModel(
+                "The HuggingFaceEncoderModel cannot be used when use_internal_server is True. "
+                "Please use the internal vLLM server module."
+            )
         model, tokenizer = load_model_and_tokenizer(
             model_config=model_config,
             dataset_config=dataset_config,

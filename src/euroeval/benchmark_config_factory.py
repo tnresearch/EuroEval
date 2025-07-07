@@ -45,6 +45,7 @@ def build_benchmark_config(
     debug: bool,
     run_with_cli: bool,
     only_allow_safetensors: bool,
+    use_internal_server: bool,
     first_time: bool = False,
 ) -> BenchmarkConfig:
     """Create a benchmark configuration.
@@ -108,6 +109,10 @@ def build_benchmark_config(
             Whether the benchmark is being run with the CLI.
         only_allow_safetensors:
             Whether to only allow evaluations of models stored as safetensors.
+        use_internal_server:
+            Whether to use the internal vLLM server for all models. If True, all models
+            will be served through the internal server instead of using local HuggingFace
+            models or external APIs.
         first_time:
             Whether this is the first time the benchmark configuration is being created.
             Defaults to False.
@@ -157,6 +162,7 @@ def build_benchmark_config(
         debug=debug,
         run_with_cli=run_with_cli,
         only_allow_safetensors=only_allow_safetensors,
+        use_internal_server=use_internal_server,
     )
 
 
