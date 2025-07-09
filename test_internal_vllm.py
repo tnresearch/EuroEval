@@ -32,7 +32,7 @@ def test_internal_vllm_server():
         force=False,
         progress_bar=False,
         save_results=False,
-        device="cpu",  # We'll use CPU for this test
+        device=None,
         verbose=True,
         trust_remote_code=False,
         clear_model_cache=False,
@@ -43,13 +43,13 @@ def test_internal_vllm_server():
         api_version=None,
         debug=False,
         run_with_cli=False,
-        only_allow_safetensors=False,
+        only_allow_safetensors=True,
         use_internal_server=True,  # This flag enables the internal server module
     )
     
     # Model configuration for Llama-3.1-8B-Instruct
     model_config = ModelConfig(
-        model_id="meta-llama/Llama-3.1-8B-Instruct",
+        model_id="openai/meta-llama/Llama-3.1-8B-Instruct",
         revision="main",
         task="text-generation",
         languages=[EN],
@@ -69,9 +69,7 @@ def test_internal_vllm_server():
         huggingface_id="test_dataset",
         task=SUMM,  # Use the existing summarization task
         languages=[EN],  # English language
-        max_generated_tokens=100,
-        few_shot_examples=[],
-        prompt_template="",
+        _max_generated_tokens=10000,
     )
     
     try:
@@ -89,7 +87,8 @@ def test_internal_vllm_server():
         test_input = {
             "messages": [
                 [
-                    {"role": "user", "content": "Oslo is the "}
+                    # {"role": "user", "content": "Oslo is the "},
+                    {"role": "user", "content": "Write a summary of the movie Oslo: "}
                 ]
             ]
         }
@@ -97,7 +96,7 @@ def test_internal_vllm_server():
         # Generate output
         output = model.generate(test_input)
         print("✓ Generation completed successfully")
-        print(f"Generated text: {output.generated_texts[0]}")
+        print(f"Generated text: {output}")
         
         print("\n🎉 Internal vLLM module test passed!")
         return True

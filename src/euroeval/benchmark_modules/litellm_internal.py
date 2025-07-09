@@ -399,6 +399,7 @@ class LiteLLMInternalModel(BenchmarkModule):
             is either the model response or an Exception.
         """
         # Create a LiteLLM router for the internal server
+        print(generation_kwargs)
         router = litellm.Router(
             model_list=[
                 dict(
